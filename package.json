@@ -1,0 +1,19 @@
+{
+  "name": "book_store",
+  "version": "1.0.0",
+  "description": "---",
+  "main": "index.js",
+  "script": "node --watch index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Samarth Goyal",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.5",
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  }
+}
