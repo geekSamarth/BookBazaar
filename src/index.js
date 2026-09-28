@@ -1,21 +1,51 @@
-require("dotenv/config");
-const express = require("express");
-const bookRouter = require("./routes/book.routes.js");
-const authorRouter = require("./routes/author.routes.js");
+import app from './app.js';
+import { envConfig as env } from './config/envConfig.js';
+import { logger } from './config/logger.js'
+import { connectDB, closeDB } from './db/index.js';
 
-const app = express();
+let server;
 
-// middlewares
+const startServer = async () => {
+  try {
+    await connectDB();
 
-app.use(express.json());
+    server = app.listen(env.PORT, () => {
+      logger.info(`BookBazaar API running on port ${env.PORT}`);
+    });
+  } catch (error) {
+    logger.error("Application startup failed", {
+      message: error.message,
+      stack: error.stack,
+    });
 
-// book routes
-app.use("/books", bookRouter);
+    process.exit(1);
+  }
+};
 
-// author routes
-app.use("/authors", authorRouter);
+const shutdown = async (signal) => {
+  logger.info(`${signal} received. Starting graceful shutdown...`);
 
-// listening the server on a port
-app.listen(8000, () => {
-  console.log("Server is running on Port:8000");
-});
+  try {
+    if (server) {
+      server.close(() => {
+        logger.info("HTTP server closed");
+      });
+    }
+
+    await closeDB();
+
+    process.exit(0);
+  } catch (error) {
+    logger.error("Graceful shutdown failed", {
+      message: error.message,
+      stack: error.stack,
+    });
+
+    process.exit(1);
+  }
+};
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+startServer();
